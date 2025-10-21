@@ -3,3 +3,4 @@ ultralytics
 pillow
 torch
 gunicorn
+python-3.11.9
