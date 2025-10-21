@@ -4,11 +4,11 @@ from PIL import Image
 import os
 import io
 
-# Initialize Flask app
-app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), '..', 'templates'))
 
-# Load YOLOv11 model
-model_path = os.path.join(os.path.dirname(__file__),'..', 'models', 'best.pt')
+app = Flask(__name__)
+
+# Loading my YOLOv11 trained  model
+model_path = os.path.join(os.path.dirname(__file__), 'models', 'best.pt')
 model = YOLO(model_path)
 print("Model loaded successfully.", model_path)
 print("Model details:", model)
@@ -24,6 +24,12 @@ def classify_outfit():
     # Predciton using YOLO model
     results = model(image)
     probs = results[0].probs  # class probabilities
+
+    probs = results[0].probs  
+    if probs is None:
+        return jsonify({"error": "Model did not return classification probabilities"}), 500
+
+
     top_class_id = probs.top1
     top_class_name = results[0].names[top_class_id]
     confidence = float(probs.top1conf)
