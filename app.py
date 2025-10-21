@@ -12,36 +12,38 @@ model_path = os.path.join(os.path.dirname(__file__), 'models', 'best.pt')
 model = YOLO(model_path)
 print("Model loaded successfully.", model_path)
 print("Model details:", model)
-
-@app.route('/api/classify_outfit', methods=['GET','POST'])
+@app.route('/api/classify_outfit', methods=['POST'])
 def classify_outfit():
     if 'image' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
-    
+
     file = request.files['image']
-    image = Image.open(io.BytesIO(file.read())).convert("RGB")
+    try:
+        image = Image.open(io.BytesIO(file.read())).convert("RGB")
+    except Exception as e:
+        return jsonify({"error": f"Cannot read image: {str(e)}"}), 400
 
-    # Predciton using YOLO model
-    results = model(image)
-    probs = results[0].probs  # class probabilities
+    try:
+        results = model.predict(image, verbose=False)  # safe for classification
+        probs = results[0].probs
 
-    probs = results[0].probs  
-    if probs is None:
-        return jsonify({"error": "Model did not return classification probabilities"}), 500
+        if probs is None:
+            return jsonify({"error": "Model did not return probabilities"}), 500
 
+        top_class_id = probs.top1
+        top_class_name = results[0].names[top_class_id]
+        confidence = float(probs.top1conf)
 
-    top_class_id = probs.top1
-    top_class_name = results[0].names[top_class_id]
-    confidence = float(probs.top1conf)
+        return jsonify({
+            "status": "success",
+            "top_prediction": {
+                "class": top_class_name,
+                "confidence": round(confidence, 3)
+            }
+        })
 
-
-    return jsonify({
-        "status": "success",
-        "top_prediction": {
-            "class": top_class_name,
-            "confidence": round(confidence, 3)
-        }
-    }), 200
+    except Exception as e:
+        return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
 
 
 if __name__ == "__main__":
