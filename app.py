@@ -9,9 +9,15 @@ app = Flask(__name__)
 
 # Loading my YOLOv11 trained  model
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'best.pt')
-model = YOLO(model_path)
-print("Model loaded successfully.", model_path)
-print("Model details:", model)
+model = YOLO(model_path, device='cpu')
+
+# print("Model loaded successfully.", model_path)
+# print("Model details:", model)
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({"message": "API is running! Use POST /api/classify_outfit to classify images."})
+
 @app.route('/api/classify_outfit', methods=['POST'])
 def classify_outfit():
     if 'image' not in request.files:
@@ -19,7 +25,7 @@ def classify_outfit():
 
     file = request.files['image']
     try:
-        image = Image.open(io.BytesIO(file.read())).convert("RGB")
+        image = Image.open(io.BytesIO(file.read()))
     except Exception as e:
         return jsonify({"error": f"Cannot read image: {str(e)}"}), 400
 
