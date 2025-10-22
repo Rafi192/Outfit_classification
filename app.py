@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 # Loading my YOLOv11 trained  model
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'best.pt')
-model = YOLO(model_path, device='cpu')
+model = YOLO(model_path)
 
 # print("Model loaded successfully.", modelgit st_path)
 # print("Model details:", model)
@@ -30,7 +30,7 @@ def classify_outfit():
         return jsonify({"error": f"Cannot read image: {str(e)}"}), 400
 
     try:
-        results = model.predict(image, verbose=False)  # safe for classification
+        results = model.predict(image,device='cpu', verbose=False)  # safe for classification
         probs = results[0].probs
 
         if probs is None:
