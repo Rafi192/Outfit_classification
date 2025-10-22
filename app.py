@@ -11,7 +11,7 @@ app = Flask(__name__)
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'best.pt')
 model = YOLO(model_path, device='cpu')
 
-# print("Model loaded successfully.", model_path)
+# print("Model loaded successfully.", modelgit st_path)
 # print("Model details:", model)
 
 @app.route('/', methods=['GET'])
